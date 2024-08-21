@@ -1,0 +1,8 @@
+{
+  "name": "Power Mode Indicator",
+  "description": "Reads data from /etc/tlp.conf and displays the corresponding indicator in the top panel.",
+  "uuid": "powerIndicator@me.com",
+  "shell-version": [
+    "46"
+  ]
+}
