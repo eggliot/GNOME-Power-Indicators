@@ -38,7 +38,7 @@ const Indicator = GObject.registerClass(
         _init() {
             super._init(0.0, _('LPM and THROTTLED Indicators'));
 
-            let box = new St.BoxLayout({ vertical: false}); // Create a box to hold the icons
+            let box = new St.BoxLayout({vertical: false}); // Create a box to hold the icons
 
             this.iconLPM = new St.Icon({
                 icon_name: 'battery-missing-symbolic',
@@ -49,7 +49,7 @@ const Indicator = GObject.registerClass(
             this.iconTHROTTLED = new St.Icon({
                 icon_name: 'reaction-add-symbolic',
                 style_class: 'system-status-icon',
-                visible : true,
+                visible: true,
             });
 
 
@@ -75,8 +75,7 @@ const Indicator = GObject.registerClass(
                             log('LPM is enabled');
                             this.iconLPM.visible = true;
                             this.iconLPM.icon_name = 'battery-level-10-symbolic';
-                        }
-                        else if (data.search('LPM=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
+                        } else if (data.search('LPM=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
                             log('LPM is disabled');
                             this.iconLPM.visible = false;
 
@@ -89,8 +88,7 @@ const Indicator = GObject.registerClass(
                             log('THROTTLED is enabled');
                             this.iconTHROTTLED.visible = true;
                             this.iconTHROTTLED.icon_name = 'branch-compare-arrows-symbolic';
-                        }
-                        else if (data.search('THROTTLED=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
+                        } else if (data.search('THROTTLED=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deleted
                             log('THROTTLED is disabled');
                             this.iconTHROTTLED.visible = false;
 
