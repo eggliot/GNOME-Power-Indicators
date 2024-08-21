@@ -78,7 +78,6 @@ const Indicator = GObject.registerClass(
                         }
                         else if (data.search('LPM=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
                             log('LPM is disabled');
-                            // this.iconLPM.icon_name = 'battery-level-100-symbolic'; // Should actualy HIDE ITSELF TODO
                             this.iconLPM.visible = false;
 
                         } else {
@@ -93,23 +92,11 @@ const Indicator = GObject.registerClass(
                         }
                         else if (data.search('THROTTLED=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
                             log('THROTTLED is disabled');
-                            // this.iconTHROTTLED.icon_name = 'power-profile-performance-symbolic'; // Should actualy HIDE ITSELF TODO
                             this.iconTHROTTLED.visible = false;
 
                         } else {
                             log('WARNING: THROTTLED not found tlp.conf. Check file immediately.');
                         }
-
-                        // Update Throttled Icon BAD CODE
-                        // if (data.search('THROTTLED=1') !== -1) {
-                        //     log("THROTTLED is enabled");
-                        //     this.iconTHROTTLED.icon_name = 'power-profile-power-saver-symbolic';
-                        // } else if (data.search("THROTTLED=0") !== -1) {
-                        //     log("THROTTLED is disabled");
-                        //     this.iconTHROTTLED.icon_name = 'power-profile-performance-symbolic';
-                        // } else {
-                        //     log('WARNING: THROTTLED not found in tlp.conf. Check file immediately.');
-                        // }
 
                     } else {
                         log('Failed to load contents of the file');
@@ -127,19 +114,11 @@ export default class PowerIndicator extends Extension {
         log('PowerIndicator enabled');
         this._indicator = new Indicator();
 
-        // Ensure the uuid is set correctly
-        if (!this.uuid) {
-            log('ERROR: UUID is not set');
-            return;
-        }
-
         // Add the indicator to the status area
         Main.panel.addToStatusArea(this.uuid, this._indicator);
-        log('Indicator added to status area with UUID: ' + this.uuid);
 
         // Create a timer to update the panel icon
         this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 8, () => {
-            log('Timer triggered');
             this._indicator.updateIcons();
             return GLib.SOURCE_CONTINUE;
         });
@@ -155,85 +134,3 @@ export default class PowerIndicator extends Extension {
         this._indicator = null;
     }
 }
-
-// const Indicator = GObject.registerClass(
-//     class Indicator extends PanelMenu.Button {
-//         _init() {
-//             super._init(0.0, _('LPM and THROTTLED Indicators'));
-//
-//             this.iconLPM = new St.Icon({
-//                 icon_name: 'battery-missing-symbolic',
-//                 style_class: 'system-status-icon',
-//             });
-//
-//             this.iconTHROTTLED = new St.Icon({
-//                 icon_name: 'face-smile-symbolic',
-//                 style_class: 'system-status-icon',
-//             });
-//
-//             this.add_child(this.iconLPM);
-//             this.add_child(this.iconTHROTTLED);
-//         }
-//
-//         updateIcons() {
-//             let file = Gio.File.new_for_path(filePath);
-//
-//             file.load_contents_async(null, (file, res) => {
-//                 try {
-//                     let [success, contents] = file.load_contents_finish(res);
-//                     if (success) {
-//                         let data = new TextDecoder('utf-8').decode(contents);
-//
-//                         // Update LPM Icon
-//                         if (data.search('LPM=1') !== -1) {
-//                             log('LPM is enabled');
-//                             this.iconLPM.icon_name = 'battery-level-10-symbolic';
-//                         } else if (data.search('LPM=0') !== -1) {
-//                             log('LPM is disabled');
-//                             this.iconLPM.icon_name = 'battery-level-100-symbolic';
-//                         } else {
-//                             log('WARNING: LPM not found in tlp.conf. Check file immediately.');
-//                         }
-//
-//                         // Update Throttled Icon
-//                         if (data.search('THROTTLED=1') !== -1) {
-//                             log('THROTTLED is enabled');
-//                             this.iconTHROTTLED.icon_name = 'power-profile-power-saver-symbolic';
-//                         } else if (data.search('THROTTLED=0') !== -1) {
-//                             log('THROTTLED is disabled');
-//                             this.iconTHROTTLED.icon_name = 'power-profile-performance-symbolic';
-//                         } else {
-//                             log('WARNING: THROTTLED not found in tlp.conf. Check file immediately.');
-//                         }
-//                     } else {
-//                         log('Failed to load contents of the file');
-//                     }
-//                 } catch (e) {
-//                     log('Error loading file: ' + e.message);
-//                 }
-//             });
-//         }
-//     }
-// );
-//
-// export default class PowerIndicator extends Extension {
-//     enable() {
-//         this._indicator = new Indicator();
-//         Main.panel.addToStatusArea(this.uuid, this._indicator);
-//
-//         // Create a timer to update the panel icon
-//         this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 8, () => {
-//             this._indicator.updateIcons();
-//             return GLib.SOURCE_CONTINUE;
-//         });
-//     }
-//
-//     disable() {
-//         if (this._timer) {
-//             GLib.source_remove(this._timer);
-//             this._timer = null;
-//         }
-//         this._indicator.destroy();
-//         this._indicator = null;
-//     }
-// }
