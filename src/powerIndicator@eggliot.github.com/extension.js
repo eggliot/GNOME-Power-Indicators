@@ -32,13 +32,24 @@ const filePath = '/etc/tlp.conf';
 
 // TODO Could make it display Performance mode if on AC and display LPM if on bat? Use an UP arrow or smth
 // TODO Make it so the timer triggers on a key press (Fn + B and F12)
+// TODO make a hover or click tolip to show what each icon means in the bar
+    // smth to show what the icons are
+    // possible to have a enabled and disable button for each in the top bar?
+    
+// TODO add a prefs.js file to allow for changing the location in the panel
 
 const Indicator = GObject.registerClass(
     class Indicator extends PanelMenu.Button { // Create the indicator which will go in the top panel
         _init() {
-            super._init(0.0, _('LPM and THROTTLED Indicators'));
+            super._init(0.0, _('Power Indicators'));
 
             let box = new St.BoxLayout({vertical: false}); // Create a box to hold the icons
+
+            this.iconTHROTTLED = new St.Icon({
+                icon_name: 'content-loading-symbolic',
+                style_class: 'system-status-icon',
+                visible: true,
+            });
 
             this.iconLPM = new St.Icon({
                 icon_name: 'battery-missing-symbolic',
@@ -46,15 +57,15 @@ const Indicator = GObject.registerClass(
                 visible: true,
             });
 
-            this.iconTHROTTLED = new St.Icon({
-                icon_name: 'reaction-add-symbolic',
+            this.iconPERFORMANCE = new St.Icon({
+                icon_name: 'content-loading-symbolic',
                 style_class: 'system-status-icon',
                 visible: true,
             });
 
-
-            box.add_child(this.iconLPM);
             box.add_child(this.iconTHROTTLED);
+            box.add_child(this.iconLPM);
+            box.add_child(this.iconPERFORMANCE);
 
             this.add_child(box);
 
@@ -70,6 +81,21 @@ const Indicator = GObject.registerClass(
                         let data = new TextDecoder('utf-8').decode(contents);
                         // log('TLP contents: ' + data);
 
+                        // TODO is there a way to decrease the verbosity of these three checks? can i pass in 3 strings to one function and will it work???? prolly not cause var names but maybe
+
+                        // Update Throttled Icon
+                        if (data.search('THROTTLED=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
+                            log('THROTTLED is enabled');
+                            this.iconTHROTTLED.visible = true;
+                            this.iconTHROTTLED.icon_name = 'power-profile-power-saver-symbolic';
+                        } else if (data.search('THROTTLED=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deleted
+                            log('THROTTLED is disabled');
+                            this.iconTHROTTLED.visible = false;
+
+                        } else {
+                            log('WARNING: THROTTLED not found tlp.conf. Check file immediately.');
+                        }
+
                         // Update LPM Icon
                         if (data.search('LPM=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
                             log('LPM is enabled');
@@ -83,17 +109,17 @@ const Indicator = GObject.registerClass(
                             log('WARNING: LPM not found tlp.conf. Check file immediately.');
                         }
 
-                        // Update Throttled Icon
-                        if (data.search('THROTTLED=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
-                            log('THROTTLED is enabled');
-                            this.iconTHROTTLED.visible = true;
-                            this.iconTHROTTLED.icon_name = 'branch-compare-arrows-symbolic';
-                        } else if (data.search('THROTTLED=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deleted
-                            log('THROTTLED is disabled');
-                            this.iconTHROTTLED.visible = false;
+                        // Update Performance  Icon
+                        if (data.search('PERF=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
+                            log('PERFORMANCE is enabled');
+                            this.iconPERFORMANCE.visible = true;
+                            this.iconPERFORMANCE.icon_name = 'power-profile-performance-symbolic';
+                        } else if (data.search('PERF=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deleted
+                            log('PERFORMANCE is disabled');
+                            this.iconPERFORMANCE.visible = false;
 
                         } else {
-                            log('WARNING: THROTTLED not found tlp.conf. Check file immediately.');
+                            log('WARNING: PERFORMANCE not found tlp.conf. Check file immediately.');
                         }
 
                     } else {
@@ -116,7 +142,7 @@ export default class PowerIndicator extends Extension {
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
         // Create a timer to update the panel icon
-        this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 8, () => {
+        this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 8, () => { // TODO how fast can this refresh.....
             this._indicator.updateIcons();
             return GLib.SOURCE_CONTINUE;
         });
