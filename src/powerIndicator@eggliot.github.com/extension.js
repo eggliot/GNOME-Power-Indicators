@@ -28,20 +28,24 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-const filePath = '/etc/tlp.conf';
+const filePathTLP = '/etc/tlp.conf';
+const filePathPowerState = '/sys/class/power_supply/AC/online';
 
-// TODO Could make it display Performance mode if on AC and display LPM if on bat? Use an UP arrow or smth
+let powerState = 'Unknown'; // Create a variable to hold the power state 1 = AC, 0 = Battery
+
 // TODO Make it so the timer triggers on a key press (Fn + B and F12)
 // TODO make a hover or click tolip to show what each icon means in the bar
-    // smth to show what the icons are
-    // possible to have a enabled and disable button for each in the top bar?
-    
+// smth to show what the icons are
+// possible to have a enabled and disable button for each in the top bar?
+
 // TODO add a prefs.js file to allow for changing the location in the panel
 
 const Indicator = GObject.registerClass(
     class Indicator extends PanelMenu.Button { // Create the indicator which will go in the top panel
         _init() {
             super._init(0.0, _('Power Indicators'));
+
+
 
             let box = new St.BoxLayout({vertical: false}); // Create a box to hold the icons
 
@@ -71,10 +75,44 @@ const Indicator = GObject.registerClass(
 
         }
 
-        updateIcons() {
-            let file = Gio.File.new_for_path(filePath); // Create a file object for the tlp.conf path
+        updatePowerState() {
+            let filePowerState = Gio.File.new_for_path(filePathPowerState); // Create a file object for the power state path
 
-            file.load_contents_async(null, (file, res) => {
+            filePowerState.load_contents_async(null, (file, res) => {
+                try {
+                    let [success, contents] = file.load_contents_finish(res);
+                    if (success) {
+                        let data = new TextDecoder('utf-8').decode(contents);
+                        log('Power State contents: ' + data);
+
+                        if (data.search('1') !== -1) { // If the returned index is not -1 then the power state is 1
+                            log('Power State is AC');
+                            powerState = 1;
+
+                        } else if (data.search('0') !== -1) { // If the returned index is not -1 then the power state is 0
+                            log('Power State is Battery');
+                            powerState = 0;
+
+                        } else {
+                            log('WARNING: Power State not found. Something is VERY WRONG!.');
+                        }
+
+                    } else {
+                        log('Failed to load contents of the file');
+                    }
+                } catch (e) {
+                    log('Error loading power state file: ' + e.message);
+                }
+
+            });
+        }
+
+        updateIcons() {
+            this.updatePowerState()
+
+            let fileTLP = Gio.File.new_for_path(filePathTLP); // Create a file object for the tlp.conf path
+
+            fileTLP.load_contents_async(null, (file, res) => {
                 try {
                     let [success, contents] = file.load_contents_finish(res);
                     if (success) {
@@ -99,7 +137,11 @@ const Indicator = GObject.registerClass(
                         // Update LPM Icon
                         if (data.search('LPM=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
                             log('LPM is enabled');
-                            this.iconLPM.visible = true;
+                            if (powerState === 0) {
+                                this.iconLPM.visible = true;
+                            } else if (powerState === 1) {
+                                this.iconLPM.visible = false;
+                            }
                             this.iconLPM.icon_name = 'battery-level-10-symbolic';
                         } else if (data.search('LPM=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deletded
                             log('LPM is disabled');
@@ -112,7 +154,13 @@ const Indicator = GObject.registerClass(
                         // Update Performance  Icon
                         if (data.search('PERF=1') !== -1) { // If the returned index is not -1 then LPM=1 is there
                             log('PERFORMANCE is enabled');
-                            this.iconPERFORMANCE.visible = true;
+                            if (powerState === 1) {
+                                this.iconPERFORMANCE.visible = true;
+
+                            } else if (powerState === 0) {
+                                this.iconPERFORMANCE.visible = false;
+                            }
+
                             this.iconPERFORMANCE.icon_name = 'power-profile-performance-symbolic';
                         } else if (data.search('PERF=0') !== -1) { // Checking that it is disabled because a return of -1 could mean the entry has been deleted
                             log('PERFORMANCE is disabled');
@@ -126,7 +174,7 @@ const Indicator = GObject.registerClass(
                         log('Failed to load contents of the file');
                     }
                 } catch (e) {
-                    log('Error loading file: ' + e.message);
+                    log('Error loading TLP.conf: ' + e.message);
                 }
 
             });
