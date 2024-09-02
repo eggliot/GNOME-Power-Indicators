@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema id="org.gnome.shell.extensions.my-extension" path="/org/gnome/shell/extensions/my-extension/">
+<!--        <key name="throttled" type="s">-->
+<!--            <default>'<Super/><Alt/>T'</default>-->
+<!--            <summary>Keybinding for my extension</summary>-->
+<!--            <description>Keybinding to trigger the function in my extension</description>-->
+<!--        </key>-->
+        <key name="toggler" type="s">
+            <default>'<Control/>Pause'</default>
+            <summary>Keybinding for my extension</summary>
+            <description>Keybinding to trigger the function in my extension</description>
+        </key>
+    </schema>
+</schemalist>

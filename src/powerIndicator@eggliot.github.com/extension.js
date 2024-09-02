@@ -186,6 +186,22 @@ export default class PowerIndicator extends Extension {
         log('PowerIndicator enabled');
         this._indicator = new Indicator();
 
+        // Add keybinding
+        global.display.add_keybinding(
+            'throttled',
+            new Gio.Settings({ schema_id: 'org.gnome.shell.extensions.my-extension' }),
+            Meta.KeyBindingFlags.NONE,
+            Shell.ActionMode.NORMAL,
+            updateIcons
+        );
+        global.display.add_keybinding(
+            'toggler',
+            new Gio.Settings({ schema_id: 'org.gnome.shell.extensions.my-extension' }),
+            Meta.KeyBindingFlags.NONE,
+            Shell.ActionMode.NORMAL,
+            updateIcons
+        );
+
         // Add the indicator to the status area
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
@@ -202,6 +218,11 @@ export default class PowerIndicator extends Extension {
             GLib.source_remove(this._timer);
             this._timer = null;
         }
+
+        // Remove keybinding
+        global.display.remove_keybinding('throttled');
+        global.display.remove_keybinding('toggler');
+
         this._indicator.destroy();
         this._indicator = null;
     }
