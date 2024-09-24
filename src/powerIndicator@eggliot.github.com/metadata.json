@@ -3,6 +3,7 @@
   "description": "Reads data from /etc/tlp.conf and displays the corresponding indicator in the top panel.",
   "uuid": "powerIndicator@eggliot.github.com",
   "shell-version": [
-    "46"
+    "46",
+    "47"
   ]
 }
